@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  producer:
+    build:
+      context: .
+      dockerfile: apps/producer/Dockerfile
+    container_name: producer-service
+    ports:
+      - "3000:3000"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_QUEUE=notifications
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - NODE_ENV=production
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  consumer:
+    build:
+      context: .
+      dockerfile: apps/consumer/Dockerfile
+    container_name: consumer-service
+    ports:
+      - "3001:3001"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_QUEUE=notifications
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - NODE_ENV=production
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  rabbitmq_data:
