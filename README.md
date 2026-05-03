@@ -67,6 +67,8 @@ RABBITMQ_QUEUE=notifications
 
 # Telegram Bot (получи от @BotFather)
 TELEGRAM_BOT_TOKEN=your_bot_token_here
+
+# Chat ID для уведомлений (опционально - бот отвечает всем)
 TELEGRAM_CHAT_ID=your_chat_id_here
 
 # Ports
@@ -74,18 +76,23 @@ PORT_PRODUCER=3000
 PORT_CONSUMER=3001
 ```
 
+**Примечание:** `TELEGRAM_CHAT_ID` используется только для отправки уведомлений из очереди RabbitMQ. Telegram Bot с кнопками отвечает любому пользователю, который ему напишет.
+
 #### Как получить Telegram Bot Token:
 1. Открой [@BotFather](https://t.me/BotFather) в Telegram
 2. Отправь `/newbot`
 3. Следуй инструкциям и получи токен (формат: `123456789:ABCdef...`)
 4. Добавь бота в свой чат и отправь `/start`
 
-#### Как получить Chat ID:
+#### Как получить Chat ID (для уведомлений):
+Если указан `TELEGRAM_CHAT_ID` в `.env`, уведомления будут отправляться в этот чат.
 1. Открой браузер и перейди:
    ```
    https://api.telegram.org/botYOUR_TOKEN/getUpdates
    ```
 2. Найди поле `chat.id` в ответе
+
+**Примечание:** Если `TELEGRAM_CHAT_ID` не указан, уведомления не будут отправляться, но бот с кнопками продолжит работать для всех пользователей.
 
 ### 3. Запуск RabbitMQ
 
@@ -229,9 +236,3 @@ docker exec rabbitmq rabbitmqctl list_queues name messages consumers
 - Убедись что бот добавлен в чат
 
 ---
-
----
-
-## Лицензия
-
-MIT
